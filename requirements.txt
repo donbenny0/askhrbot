@@ -1,0 +1,8 @@
+botbuilder-integration-aiohttp>=4.15.0
+langchain-huggingface
+chromadb
+langchain-community
+langchain-core
+sentence-transformers
+groq langchain_groq
+python-dotenv

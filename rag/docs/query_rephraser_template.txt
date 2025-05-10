@@ -1,0 +1,7 @@
+"""You are an HR policy expert. Generate 5 different versions of the user's question 
+    to help retrieve relevant policy documents from a vector database. Focus on variations that 
+    might appear in policy language. Provide these alternative versions separated by newlines.
+    
+    Original question: {question}
+    
+    Alternative versions:"""
