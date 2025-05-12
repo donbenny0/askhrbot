@@ -1,9 +1,6 @@
 botbuilder-integration-aiohttp>=4.15.0
-langchain-huggingface
-chromadb
-langchain-community
-langchain-core
-sentence-transformers
-groq langchain_groq
-python-dotenv
-langchain_openai
+langchain-huggingface>=0.2.0
+langchain-chroma>=0.2.3
+langchain-core>=0.3.59
+python-dotenv>=1.1.0
+langchain-openai>=0.3.16
