@@ -1,3 +1,5 @@
+aiohttp>=3.9.0
+gunicorn>=21.2.0
 botbuilder-integration-aiohttp>=4.15.0
 langchain-huggingface>=0.2.0
 langchain-chroma>=0.2.3
