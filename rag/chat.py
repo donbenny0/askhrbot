@@ -1,17 +1,21 @@
 import os
 from time import time
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.retrievers.multi_query import MultiQueryRetriever
-from langchain.schema.runnable import RunnablePassthrough,RunnableLambda
-from langchain_groq import ChatGroq
+from langchain.schema.runnable import RunnablePassthrough
 from dotenv import load_dotenv
+from langchain_openai import AzureChatOpenAI
+from langchain_openai import AzureOpenAIEmbeddings
 
 
 # load_dotenv()
 load_dotenv()
+azure_openapi_azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openapi_api_key=os.getenv("AZURE_OPENAI_API_KEY")
+azure_openapi_deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+azure_openapi_api_version="2024-12-01-preview"
 
 
 # read docs
@@ -25,11 +29,22 @@ def read_docs(file_path: str) -> str:
 
 # Initialize embeddings
 print("Initializing embeddings...")
-embedding_model = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5", model_kwargs={"device": "cpu"},encode_kwargs={"normalize_embeddings": True})
+embedding_model = AzureOpenAIEmbeddings(
+    model="text-embedding-3-large",
+    azure_endpoint=azure_openapi_azure_endpoint,
+    api_key=azure_openapi_api_key,
+    openai_api_version=azure_openapi_api_version
+)
 
 # initialize LLM
 print("Initializing LLM...")
-llm = ChatGroq(temperature=0,model_name="meta-llama/llama-4-scout-17b-16e-instruct",api_key=os.getenv("GROQ_API_KEY"))
+llm = AzureChatOpenAI(
+    api_key=azure_openapi_api_key,
+    azure_endpoint=azure_openapi_azure_endpoint,
+    api_version=azure_openapi_api_version,
+    deployment_name=azure_openapi_deployment_name,
+    temperature=0,
+)
 
 
 # load vectorstore
@@ -73,21 +88,21 @@ template = read_docs("rag/docs/chat_template.txt")
 prompt = ChatPromptTemplate.from_template(template)
 
 # debug retriever
-print("Debugging retriever...")
-def print_context(inputs):
-    docs = inputs["context"]
-    print("🔍 Retrieved context:\n")
-    for doc in docs:
-        print(doc.page_content)
-        print("-" * 80)
-    return inputs
+# print("Debugging retriever...")
+# def print_context(inputs):
+#     docs = inputs["context"]
+#     print("🔍 Retrieved context:\n")
+#     for doc in docs:
+#         print(doc.page_content)
+#         print("-" * 80)
+#     return inputs
 
 
 # Rag pipeline
 print("Initializing RAG pipeline...")
 query_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
-    | RunnableLambda(print_context)
+    # | RunnableLambda(print_context)
     | prompt
     | llm
     | StrOutputParser()

@@ -1,20 +1,29 @@
 import re
+import os
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from typing import List
+from langchain_openai import AzureOpenAIEmbeddings
+from dotenv import load_dotenv
 
 
+load_dotenv()
+azure_openapi_azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_openapi_api_key=os.getenv("AZURE_OPENAI_API_KEY")
+azure_openapi_deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+azure_openapi_api_version="2024-12-01-preview"
 
 
 # Initialize embeddings
-embedding_model = HuggingFaceEmbeddings(
-    model_name="BAAI/bge-small-en-v1.5", 
-    model_kwargs={"device": "cpu"},
-    encode_kwargs={"normalize_embeddings": True} 
+embedding_model = AzureOpenAIEmbeddings(
+    model="text-embedding-3-large",
+    azure_endpoint=azure_openapi_azure_endpoint,
+    api_key=azure_openapi_api_key,
+    openai_api_version=azure_openapi_api_version
 )
 
 # initialize initial text splitter
