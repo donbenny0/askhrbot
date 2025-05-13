@@ -4,7 +4,7 @@
 Context:
 {context}
 
-Question: {question}
+Question: {input}
 
 Always respond in a concise and professional manner and also just don't answer simply if always create a scentence with the answer.
 NOTE:Do not mention the source of the context or the document name in your answer or anything related to the provided context.

@@ -8,7 +8,11 @@ from langchain.schema.runnable import RunnablePassthrough
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
-
+from langchain.chains import create_retrieval_chain
+from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_history_aware_retriever
 
 # load_dotenv()
 load_dotenv()
@@ -84,42 +88,81 @@ retriever = MultiQueryRetriever.from_llm(
 
 # initalize template
 print("Retrieving template...")
-template = read_docs("rag/docs/chat_template.txt")
-prompt = ChatPromptTemplate.from_template(template)
+prompt_template = read_docs("rag/docs/chat_template.txt")
 
-# debug retriever
-# print("Debugging retriever...")
-# def print_context(inputs):
-#     docs = inputs["context"]
-#     print("🔍 Retrieved context:\n")
-#     for doc in docs:
-#         print(doc.page_content)
-#         print("-" * 80)
-#     return inputs
 
+retriever_prompt = (
+    "Given a chat history and the latest user question which might reference context in the chat history,"
+    "formulate a standalone question which can be understood without the chat history."
+    "Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
+)
+
+contextualize_q_prompt  = ChatPromptTemplate.from_messages(
+    [
+        ("system", retriever_prompt),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{input}"),
+
+
+     ]
+)
+
+history_aware_retriever = create_history_aware_retriever(llm,retriever,contextualize_q_prompt)
+
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", prompt_template),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+
+question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+
+rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
 # Rag pipeline
 print("Initializing RAG pipeline...")
-query_chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
-    # | RunnableLambda(print_context)
-    | prompt
-    | llm
-    | StrOutputParser()
-)
 
 
+def timed_query(user_input: str) -> str:
+    chat_history = []
 
-def timed_query(question: str) -> str:
+    # Step 1: Read chat history from file if it exists
+    try:
+        with open('chat_history.txt', 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            for i in range(0, len(lines), 2):
+                if i + 1 < len(lines):
+                    chat_history.extend([
+                        HumanMessage(content=lines[i].strip()),
+                        AIMessage(content=lines[i + 1].strip())
+                    ])
+    except FileNotFoundError:
+        # No existing chat history
+        pass
+
+    # Step 2: Invoke RAG chain
     start_time = time()
     try:
-        print("Processing query...")
-        print(f"Question: {question}")
-        response = query_chain.invoke(question)
+        response = rag_chain.invoke({
+            "input": user_input,
+            "chat_history": chat_history
+        })
+
+        # Add the new interaction to history
+        user_message = HumanMessage(content=user_input)
+        ai_message = AIMessage(content=response["answer"])
+        chat_history.extend([user_message, ai_message])
+
+        # Step 3: Append new interaction to chat history file
+        with open('chat_history.txt', 'a', encoding='utf-8') as f:
+            f.write(f"{user_input}\n{response['answer']}\n")
+
         elapsed = time() - start_time
         print(f"Response time: {elapsed:.2f} seconds")
-        return response
+        return response["answer"]
+
     except Exception as e:
         return f"Error processing query: {str(e)}"
     
-# print(timed_query("What is the remote work policy?"))
