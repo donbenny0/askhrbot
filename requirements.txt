@@ -1,8 +1,8 @@
-aiohttp>=3.9.0
-gunicorn>=21.2.0
+python-dotenv
+aiohttp
+gunicorn
 botbuilder-integration-aiohttp>=4.15.0
 langchain-huggingface>=0.2.0
 langchain-chroma>=0.2.3
 langchain-core>=0.3.59
-python-dotenv>=1.1.0
 langchain-openai>=0.3.16
