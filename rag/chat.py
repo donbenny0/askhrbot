@@ -43,6 +43,9 @@ llm = AzureChatOpenAI(
     temperature=0,
 )
 
+
+
+
 vectorstore = Chroma(
     collection_name=Config.COLLECTION_NAME,
     embedding_function=embedding_model,
