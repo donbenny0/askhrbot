@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 from botbuilder.core import ActivityHandler, MessageFactory, TurnContext
-from botbuilder.schema import ChannelAccount
+from botbuilder.schema import ChannelAccount, ActivityTypes,Activity
 from rag.chat import chat
 
 
@@ -27,9 +27,15 @@ class EchoBot(ActivityHandler):
         return conv_id
     
     async def on_message_activity(self, turn_context: TurnContext):
+        # Send typing indicator
+        typing_activity = Activity(type=ActivityTypes.typing)
+        await turn_context.send_activity(typing_activity)
+        
+        # Process the message
         user_id = self._extract_user_id(turn_context.activity.from_property.id)
         conversation_id = self._extract_conversation_id(turn_context.activity.conversation.id)
-        query_response=chat(turn_context.activity.text,user_id,conversation_id)
+        query_response = chat(turn_context.activity.text, user_id, conversation_id)
+        
         return await turn_context.send_activity(
             MessageFactory.text(query_response)
         )

@@ -1,0 +1,16 @@
+[
+  {
+    "role": "system",
+    "summary": "The user engaged in a conversation with the assistant, greeting it multiple times and inquiring about Shine Mathew, the CEO and Founder of AyataCommerce. The assistant provided information about Shine's role in the company but could not specify his place of origin. The user was encouraged to ask further questions about Shine or the company.",
+    "timestamp": "2025-05-19T17:00:43.013104",
+    "session_id": "a:1zPRDrno1te7qr5e5GYCTAzvjUTcKfdER_B-kLcmXGzA_LeOOYcOoKQq8_f8KF-NAi3ruPH5MhIqnfmSaIvuw7ZbLomxAr6cuozfIOEYhoGuqD5Q4-H6eLDWPg5VziV40",
+    "summarized": true,
+    "summary_of": [
+      "2025-05-19T16:56:45.731794",
+      "2025-05-19T16:57:11.940834",
+      "2025-05-19T17:00:08.642111",
+      "2025-05-19T17:00:25.197094",
+      "2025-05-19T17:00:40.413918"
+    ]
+  }
+]
